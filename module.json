@@ -1,0 +1,28 @@
+{
+  "module_id": "reservations",
+  "name": "Reservations",
+  "name_es": "Reservas",
+  "description": "Restaurant reservation and booking management system",
+  "description_es": "Sistema de gestión de reservas de restaurante",
+  "version": "1.0.0",
+  "author": "ERPlora",
+  "category": "restaurant",
+  "dependencies": [],
+  "optional_dependencies": ["tables", "customers"],
+  "settings": {
+    "configurable": true,
+    "settings_url": "/modules/reservations/settings/"
+  },
+  "signals": {
+    "emits": ["reservation_created", "reservation_confirmed", "reservation_cancelled", "reservation_seated"],
+    "listens": ["table_closed"]
+  },
+  "menu": {
+    "label": "Reservations",
+    "label_es": "Reservas",
+    "icon": "calendar-outline",
+    "url": "/modules/reservations/",
+    "order": 50,
+    "show": true
+  }
+}
