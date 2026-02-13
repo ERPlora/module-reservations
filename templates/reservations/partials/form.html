@@ -1,0 +1,177 @@
+{% load i18n djicons %}
+
+<div class="p-4">
+    <!-- Back Button -->
+    <button class="btn btn-ghost btn-sm mb-4"
+        hx-get="{% if reservation %}{% url 'reservations:detail' reservation.pk %}{% else %}{% url 'reservations:today' %}{% endif %}"
+        hx-target="#main-content-area"
+        hx-push-url="true">
+        {% icon "arrow-back-outline" css_class="mr-1" %}
+        {% trans "Back" %}
+    </button>
+
+    <div class="mb-6">
+        <h1 class="text-3xl font-bold">{% if reservation %}{% trans "Edit Reservation" %}{% else %}{% trans "New Reservation" %}{% endif %}</h1>
+        {% if reservation %}
+        <p class="text-sm mt-2 text-muted">{{ reservation.guest_name }} &mdash; {{ reservation.date|date:"d/m/Y" }}</p>
+        {% endif %}
+    </div>
+
+    <form method="post" class="space-y-4" id="reservation-form">
+        {% csrf_token %}
+
+        {% if form.non_field_errors %}
+        <div class="card mb-4">
+            <div class="card-body">
+                <div class="flex items-center gap-2 text-error">
+                    {% icon "alert-circle-outline" css_class="text-xl" %}
+                    <div>
+                        {% for error in form.non_field_errors %}
+                        <p>{{ error }}</p>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Guest Information -->
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">{% trans "Guest Information" %}</h3>
+            </div>
+            <div class="card-body space-y-4">
+                <div>
+                    <label class="block text-sm font-medium mb-1">{% trans "Guest Name" %} *</label>
+                    <input type="text" name="guest_name" value="{{ form.guest_name.value|default:'' }}"
+                        class="input w-full{% if form.guest_name.errors %} input--error{% endif %}"
+                        placeholder="{% trans 'Full name' %}" required>
+                    {% if form.guest_name.errors %}<p class="text-xs text-error mt-1">{{ form.guest_name.errors.0 }}</p>{% endif %}
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium mb-1">
+                            {% trans "Phone" %}
+                            {% if settings.require_phone %} *{% endif %}
+                        </label>
+                        <input type="tel" name="guest_phone" value="{{ form.guest_phone.value|default:'' }}"
+                            class="input w-full{% if form.guest_phone.errors %} input--error{% endif %}"
+                            placeholder="{% trans 'Phone number' %}"
+                            {% if settings.require_phone %}required{% endif %}>
+                        {% if form.guest_phone.errors %}<p class="text-xs text-error mt-1">{{ form.guest_phone.errors.0 }}</p>{% endif %}
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium mb-1">
+                            {% trans "Email" %}
+                            {% if settings.require_email %} *{% endif %}
+                        </label>
+                        <input type="email" name="guest_email" value="{{ form.guest_email.value|default:'' }}"
+                            class="input w-full{% if form.guest_email.errors %} input--error{% endif %}"
+                            placeholder="{% trans 'Email address' %}"
+                            {% if settings.require_email %}required{% endif %}>
+                        {% if form.guest_email.errors %}<p class="text-xs text-error mt-1">{{ form.guest_email.errors.0 }}</p>{% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Reservation Details -->
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">{% trans "Reservation Details" %}</h3>
+            </div>
+            <div class="card-body space-y-4">
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium mb-1">{% trans "Date" %} *</label>
+                        <input type="date" name="date"
+                            value="{% if form.date.value %}{{ form.date.value|date:'Y-m-d' }}{% endif %}"
+                            class="input w-full{% if form.date.errors %} input--error{% endif %}"
+                            required>
+                        {% if form.date.errors %}<p class="text-xs text-error mt-1">{{ form.date.errors.0 }}</p>{% endif %}
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium mb-1">{% trans "Time" %} *</label>
+                        <input type="time" name="time" value="{{ form.time.value|default:'' }}"
+                            class="input w-full{% if form.time.errors %} input--error{% endif %}"
+                            required>
+                        {% if form.time.errors %}<p class="text-xs text-error mt-1">{{ form.time.errors.0 }}</p>{% endif %}
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium mb-1">{% trans "Party Size" %} *</label>
+                        <input type="number" name="party_size" value="{{ form.party_size.value|default:'2' }}"
+                            class="input w-full{% if form.party_size.errors %} input--error{% endif %}"
+                            min="{{ settings.min_party_size|default:'1' }}"
+                            max="{{ settings.max_party_size|default:'20' }}"
+                            required>
+                        {% if form.party_size.errors %}<p class="text-xs text-error mt-1">{{ form.party_size.errors.0 }}</p>{% endif %}
+                    </div>
+                </div>
+                {% if form.table %}
+                <div>
+                    <label class="block text-sm font-medium mb-1">{% trans "Table" %}</label>
+                    <select name="table" class="select w-full">
+                        <option value="">{% trans "Auto-assign" %}</option>
+                        {% for value, label in form.table.field.choices %}
+                        {% if value %}
+                        <option value="{{ value }}" {% if form.table.value == value|stringformat:"s" %}selected{% endif %}>{{ label }}</option>
+                        {% endif %}
+                        {% endfor %}
+                    </select>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Notes -->
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">{% trans "Notes" %}</h3>
+            </div>
+            <div class="card-body space-y-4">
+                <div>
+                    <label class="block text-sm font-medium mb-1">{% trans "Guest Notes / Special Requests" %}</label>
+                    <textarea name="notes" class="textarea w-full" rows="3"
+                        placeholder="{% trans 'e.g. Allergies, birthday celebration, high chair needed...' %}">{{ form.notes.value|default:'' }}</textarea>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium mb-1">{% trans "Internal Notes" %}</label>
+                    <textarea name="internal_notes" class="textarea w-full" rows="2"
+                        placeholder="{% trans 'Staff-only notes...' %}">{{ form.internal_notes.value|default:'' }}</textarea>
+                </div>
+            </div>
+        </div>
+
+        <!-- Submit -->
+        <button type="submit" class="btn color-primary w-full">
+            {% icon "save-outline" css_class="mr-2" %}
+            {% if reservation %}{% trans "Update Reservation" %}{% else %}{% trans "Create Reservation" %}{% endif %}
+        </button>
+    </form>
+</div>
+
+<script>
+document.getElementById('reservation-form').addEventListener('submit', async function(e) {
+    e.preventDefault();
+    const form = e.target;
+    const formData = new FormData(form);
+    try {
+        const response = await fetch(form.action || window.location.href, {
+            method: 'POST',
+            headers: {'X-CSRFToken': formData.get('csrfmiddlewaretoken')},
+            body: formData
+        });
+        const contentType = response.headers.get('content-type');
+        if (contentType && contentType.includes('application/json')) {
+            const data = await response.json();
+            if (data.success && data.id) {
+                htmx.ajax('GET', '{% url "reservations:detail" "00000000-0000-0000-0000-000000000000" %}'.replace('00000000-0000-0000-0000-000000000000', data.id), {target: '#main-content-area', pushUrl: true});
+            }
+        } else {
+            // Server returned HTML (form with errors), swap it in
+            const html = await response.text();
+            document.getElementById('main-content-area').innerHTML = html;
+        }
+    } catch (e) { console.error(e); }
+});
+</script>

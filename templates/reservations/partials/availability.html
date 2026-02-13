@@ -1,0 +1,257 @@
+{% load i18n djicons %}
+
+<div class="p-4">
+    <!-- Page Header -->
+    <div class="mb-6">
+        <h1 class="text-3xl font-bold">{% trans "Availability" %}</h1>
+        <p class="text-sm mt-2 text-muted">{% trans "Manage time slots and blocked dates" %}</p>
+    </div>
+
+    <!-- Time Slots Section -->
+    <div class="card mb-4">
+        <div class="card-header">
+            <div class="flex justify-between items-center">
+                <h3 class="card-title">
+                    {% icon "time-outline" css_class="text-primary mr-2" %}
+                    {% trans "Time Slots" %}
+                </h3>
+                <button class="btn btn-sm color-primary"
+                    onclick="document.getElementById('timeslot-add-form').classList.toggle('hidden')">
+                    {% icon "add-outline" css_class="mr-1" %}
+                    {% trans "Add Slot" %}
+                </button>
+            </div>
+        </div>
+
+        <!-- Add Time Slot Form (hidden by default) -->
+        <div id="timeslot-add-form" class="card-body hidden border-b">
+            <form id="slot-form" class="space-y-4">
+                {% csrf_token %}
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium mb-1">{% trans "Day" %} *</label>
+                        <select name="day_of_week" class="select w-full" required>
+                            {% for value, label in days_of_week %}
+                            <option value="{{ value }}">{{ label }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium mb-1">{% trans "Start Time" %} *</label>
+                        <input type="time" name="start_time" class="input w-full" required>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium mb-1">{% trans "End Time" %} *</label>
+                        <input type="time" name="end_time" class="input w-full" required>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium mb-1">{% trans "Max Reservations" %}</label>
+                        <input type="number" name="max_reservations" value="10" class="input w-full" min="1">
+                    </div>
+                </div>
+                <div class="flex gap-2">
+                    <button type="submit" class="btn btn-sm color-primary">
+                        {% icon "add-outline" css_class="mr-1" %}
+                        {% trans "Add Time Slot" %}
+                    </button>
+                    <button type="button" class="btn btn-ghost btn-sm"
+                        onclick="document.getElementById('timeslot-add-form').classList.add('hidden')">
+                        {% trans "Cancel" %}
+                    </button>
+                </div>
+            </form>
+        </div>
+
+        <div class="card-body p-0">
+            {% if slots %}
+            <div class="list">
+                {% for slot in slots %}
+                <div class="list-item">
+                    <div class="list-item-start">
+                        <div class="w-10 h-10 bg-primary/10 rounded-lg flex items-center justify-center">
+                            {% icon "time-outline" css_class="text-xl text-primary" %}
+                        </div>
+                    </div>
+                    <div class="list-item-content">
+                        <div class="list-item-label">{{ slot.get_day_of_week_display }}</div>
+                        <div class="list-item-note">
+                            {{ slot.start_time|time:"H:i" }} - {{ slot.end_time|time:"H:i" }}
+                            &middot; {% trans "Max" %}: {{ slot.max_reservations }}
+                        </div>
+                    </div>
+                    <div class="list-item-end flex items-center gap-2">
+                        {% if slot.is_active %}
+                        <span class="badge color-success badge-sm">{% trans "Active" %}</span>
+                        {% else %}
+                        <span class="badge  badge-sm">{% trans "Inactive" %}</span>
+                        {% endif %}
+                        <button class="btn color-error btn-ghost btn-sm"
+                            onclick="deleteTimeSlot('{{ slot.pk }}')">
+                            {% icon "trash-outline" %}
+                        </button>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <div class="text-center py-8 text-muted">
+                {% icon "time-outline" css_class="text-4xl block mx-auto mb-2" %}
+                <p class="mt-2">{% trans "No time slots configured" %}</p>
+                <p class="text-sm mt-1">{% trans "Add time slots to define when reservations are accepted" %}</p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Blocked Dates Section -->
+    <div class="card">
+        <div class="card-header">
+            <div class="flex justify-between items-center">
+                <h3 class="card-title">
+                    {% icon "close-circle-outline" css_class="text-error mr-2" %}
+                    {% trans "Blocked Dates" %}
+                </h3>
+                <button class="btn btn-sm btn-outline color-error"
+                    onclick="document.getElementById('blocked-add-form').classList.toggle('hidden')">
+                    {% icon "add-outline" css_class="mr-1" %}
+                    {% trans "Block Date" %}
+                </button>
+            </div>
+        </div>
+
+        <!-- Add Blocked Date Form (hidden by default) -->
+        <div id="blocked-add-form" class="card-body hidden border-b">
+            <form id="blocked-form" class="space-y-4">
+                {% csrf_token %}
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium mb-1">{% trans "Date" %} *</label>
+                        <input type="date" name="date" class="input w-full" required>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium mb-1">{% trans "Reason" %}</label>
+                        <input type="text" name="reason" class="input w-full"
+                            placeholder="{% trans 'e.g. Holiday, Private Event...' %}">
+                    </div>
+                    <div class="flex items-end">
+                        <label class="flex items-center gap-2 pb-1">
+                            <input type="checkbox" name="is_full_day" checked class="checkbox">
+                            <span class="text-sm">{% trans "Full day" %}</span>
+                        </label>
+                    </div>
+                </div>
+                <div class="flex gap-2">
+                    <button type="submit" class="btn color-error btn-sm">
+                        {% icon "close-circle-outline" css_class="mr-1" %}
+                        {% trans "Block Date" %}
+                    </button>
+                    <button type="button" class="btn btn-ghost btn-sm"
+                        onclick="document.getElementById('blocked-add-form').classList.add('hidden')">
+                        {% trans "Cancel" %}
+                    </button>
+                </div>
+            </form>
+        </div>
+
+        <div class="card-body p-0">
+            {% if blocked_dates %}
+            <div class="list">
+                {% for block in blocked_dates %}
+                <div class="list-item">
+                    <div class="list-item-start">
+                        <div class="w-10 h-10 bg-error/10 rounded-lg flex items-center justify-center">
+                            {% icon "close-circle-outline" css_class="text-xl text-error" %}
+                        </div>
+                    </div>
+                    <div class="list-item-content">
+                        <div class="list-item-label">{{ block.date|date:"l, d F Y" }}</div>
+                        <div class="list-item-note">
+                            {% if block.is_full_day %}
+                                {% trans "Full day" %}
+                            {% else %}
+                                {{ block.blocked_from|time:"H:i" }} - {{ block.blocked_until|time:"H:i" }}
+                            {% endif %}
+                            {% if block.reason %} &middot; {{ block.reason }}{% endif %}
+                        </div>
+                    </div>
+                    <div class="list-item-end">
+                        <button class="btn color-error btn-ghost btn-sm"
+                            onclick="deleteBlockedDate('{{ block.pk }}')">
+                            {% icon "trash-outline" %}
+                        </button>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <div class="text-center py-8 text-muted">
+                {% icon "calendar-clear-outline" css_class="text-4xl block mx-auto mb-2" %}
+                <p class="mt-2">{% trans "No blocked dates" %}</p>
+                <p class="text-sm mt-1">{% trans "Block dates to prevent reservations on holidays or closures" %}</p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<script>
+document.getElementById('slot-form').addEventListener('submit', async function(e) {
+    e.preventDefault();
+    const form = e.target;
+    const formData = new FormData(form);
+    try {
+        const response = await fetch('{% url "reservations:timeslot_add" %}', {
+            method: 'POST',
+            headers: {'X-CSRFToken': formData.get('csrfmiddlewaretoken')},
+            body: formData
+        });
+        const data = await response.json();
+        if (data.success) {
+            htmx.ajax('GET', '{% url "reservations:availability" %}', {target: '#main-content-area', pushUrl: false});
+        }
+    } catch (e) { console.error(e); }
+});
+
+document.getElementById('blocked-form').addEventListener('submit', async function(e) {
+    e.preventDefault();
+    const form = e.target;
+    const formData = new FormData(form);
+    try {
+        const response = await fetch('{% url "reservations:blocked_date_add" %}', {
+            method: 'POST',
+            headers: {'X-CSRFToken': formData.get('csrfmiddlewaretoken')},
+            body: formData
+        });
+        const data = await response.json();
+        if (data.success) {
+            htmx.ajax('GET', '{% url "reservations:availability" %}', {target: '#main-content-area', pushUrl: false});
+        }
+    } catch (e) { console.error(e); }
+});
+
+async function deleteTimeSlot(id) {
+    if (!confirm('{% trans "Delete this time slot?" %}')) return;
+    try {
+        const response = await fetch('{% url "reservations:timeslot_delete" "00000000-0000-0000-0000-000000000000" %}'.replace('00000000-0000-0000-0000-000000000000', id), {
+            method: 'POST',
+            headers: {'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]')?.value || '{{ csrf_token }}'}
+        });
+        if (response.ok) {
+            htmx.ajax('GET', '{% url "reservations:availability" %}', {target: '#main-content-area', pushUrl: false});
+        }
+    } catch (e) { console.error(e); }
+}
+
+async function deleteBlockedDate(id) {
+    if (!confirm('{% trans "Unblock this date?" %}')) return;
+    try {
+        const response = await fetch('{% url "reservations:blocked_date_delete" "00000000-0000-0000-0000-000000000000" %}'.replace('00000000-0000-0000-0000-000000000000', id), {
+            method: 'POST',
+            headers: {'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]')?.value || '{{ csrf_token }}'}
+        });
+        if (response.ok) {
+            htmx.ajax('GET', '{% url "reservations:availability" %}', {target: '#main-content-area', pushUrl: false});
+        }
+    } catch (e) { console.error(e); }
+}
+</script>

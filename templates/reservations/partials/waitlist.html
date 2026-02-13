@@ -1,0 +1,166 @@
+{% load i18n djicons %}
+
+<div class="p-4">
+    <!-- Page Header -->
+    <div class="mb-6">
+        <div class="flex justify-between items-center">
+            <div>
+                <h1 class="text-3xl font-bold">{% trans "Waitlist" %}</h1>
+                <p class="text-sm mt-2 text-muted">{% trans "Guests waiting for available tables" %}</p>
+            </div>
+            <button class="btn color-primary"
+                onclick="document.getElementById('waitlist-add-form').classList.toggle('hidden')">
+                {% icon "add-outline" css_class="mr-2" %}
+                {% trans "Add to Waitlist" %}
+            </button>
+        </div>
+    </div>
+
+    <!-- Add to Waitlist Form (hidden by default) -->
+    <div id="waitlist-add-form" class="card mb-4 hidden">
+        <div class="card-header">
+            <h3 class="card-title">{% trans "Add to Waitlist" %}</h3>
+        </div>
+        <div class="card-body">
+            <form id="waitlist-form" class="space-y-4">
+                {% csrf_token %}
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium mb-1">{% trans "Guest Name" %} *</label>
+                        <input type="text" name="guest_name" class="input w-full"
+                            placeholder="{% trans 'Full name' %}" required>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium mb-1">{% trans "Phone" %} *</label>
+                        <input type="tel" name="guest_phone" class="input w-full"
+                            placeholder="{% trans 'Phone number' %}" required>
+                    </div>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium mb-1">{% trans "Date" %} *</label>
+                        <input type="date" name="date" class="input w-full" required>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium mb-1">{% trans "Preferred Time" %} *</label>
+                        <input type="time" name="preferred_time" class="input w-full" required>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium mb-1">{% trans "Party Size" %} *</label>
+                        <input type="number" name="party_size" value="2" class="input w-full" min="1" max="20" required>
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium mb-1">{% trans "Notes" %}</label>
+                    <textarea name="notes" class="textarea w-full" rows="2"
+                        placeholder="{% trans 'Any special requests...' %}"></textarea>
+                </div>
+                <div class="flex gap-2">
+                    <button type="submit" class="btn color-primary">
+                        {% icon "add-outline" css_class="mr-1" %}
+                        {% trans "Add" %}
+                    </button>
+                    <button type="button" class="btn btn-ghost"
+                        onclick="document.getElementById('waitlist-add-form').classList.add('hidden')">
+                        {% trans "Cancel" %}
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Waitlist Entries -->
+    <div class="card">
+        <div class="card-header">
+            <h3 class="card-title">{% trans "Current Waitlist" %}</h3>
+            <span class="badge">{{ entries|length }}</span>
+        </div>
+        <div class="card-body p-0">
+            {% if entries %}
+            <div class="list">
+                {% for entry in entries %}
+                <div class="list-item">
+                    <div class="list-item-start">
+                        <div class="w-10 h-10 bg-warning/10 rounded-lg flex items-center justify-center">
+                            {% icon "people-outline" css_class="text-xl text-warning" %}
+                        </div>
+                    </div>
+                    <div class="list-item-content">
+                        <div class="list-item-label">{{ entry.guest_name }}</div>
+                        <div class="list-item-note">
+                            {{ entry.date|date:"d/m/Y" }} {% trans "at" %} {{ entry.preferred_time|time:"H:i" }}
+                            &middot; {{ entry.party_size }} {% trans "guests" %}
+                            &middot; {{ entry.guest_phone }}
+                            {% if entry.is_contacted %} &middot; {% icon "checkmark-outline" css_class="text-xs text-success" %} {% trans "Contacted" %}{% endif %}
+                        </div>
+                    </div>
+                    <div class="list-item-end flex gap-2">
+                        <button class="btn btn-sm color-primary"
+                            onclick="convertWaitlist('{{ entry.pk }}')">
+                            {% icon "swap-horizontal-outline" css_class="mr-1" %}
+                            {% trans "Convert" %}
+                        </button>
+                        <button class="btn btn-sm btn-outline color-error"
+                            onclick="removeWaitlist('{{ entry.pk }}', '{{ entry.guest_name|escapejs }}')">
+                            {% icon "trash-outline" %}
+                        </button>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <div class="text-center py-12 text-muted">
+                {% icon "people-outline" css_class="text-5xl block mx-auto mb-2" %}
+                <p class="mt-2 font-semibold">{% trans "Waitlist is empty" %}</p>
+                <p class="text-sm mt-1">{% trans "No guests are currently waiting" %}</p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<script>
+document.getElementById('waitlist-form').addEventListener('submit', async function(e) {
+    e.preventDefault();
+    const form = e.target;
+    const formData = new FormData(form);
+    try {
+        const response = await fetch('{% url "reservations:waitlist_add" %}', {
+            method: 'POST',
+            headers: {'X-CSRFToken': formData.get('csrfmiddlewaretoken')},
+            body: formData
+        });
+        const data = await response.json();
+        if (data.success) {
+            htmx.ajax('GET', '{% url "reservations:waitlist" %}', {target: '#main-content-area', pushUrl: false});
+        }
+    } catch (e) { console.error(e); }
+});
+
+async function convertWaitlist(id) {
+    if (!confirm('{% trans "Convert this waitlist entry to a reservation?" %}')) return;
+    try {
+        const response = await fetch('{% url "reservations:waitlist_convert" "00000000-0000-0000-0000-000000000000" %}'.replace('00000000-0000-0000-0000-000000000000', id), {
+            method: 'POST',
+            headers: {'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]')?.value || '{{ csrf_token }}'}
+        });
+        const data = await response.json();
+        if (data.success) {
+            htmx.ajax('GET', '{% url "reservations:waitlist" %}', {target: '#main-content-area', pushUrl: false});
+        }
+    } catch (e) { console.error(e); }
+}
+
+async function removeWaitlist(id, name) {
+    if (!confirm('{% trans "Remove" %} "' + name + '" {% trans "from the waitlist?" %}')) return;
+    try {
+        const response = await fetch('{% url "reservations:waitlist_delete" "00000000-0000-0000-0000-000000000000" %}'.replace('00000000-0000-0000-0000-000000000000', id), {
+            method: 'POST',
+            headers: {'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]')?.value || '{{ csrf_token }}'}
+        });
+        if (response.ok) {
+            htmx.ajax('GET', '{% url "reservations:waitlist" %}', {target: '#main-content-area', pushUrl: false});
+        }
+    } catch (e) { console.error(e); }
+}
+</script>

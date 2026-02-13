@@ -1,3 +1,1 @@
-"""Reservations module for ERPlora Hub."""
-
-default_app_config = 'reservations.apps.ReservationsConfig'
+default_app_config = 'modules.reservations.apps.ReservationsConfig'

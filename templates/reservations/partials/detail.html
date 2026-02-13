@@ -1,0 +1,343 @@
+{% load i18n djicons %}
+
+<div class="p-4">
+    <!-- Back Button -->
+    <button class="btn btn-ghost btn-sm mb-4"
+        hx-get="{% url 'reservations:today' %}"
+        hx-target="#main-content-area"
+        hx-push-url="true">
+        {% icon "arrow-back-outline" css_class="mr-1" %}
+        {% trans "Back" %}
+    </button>
+
+    <!-- Header Card -->
+    <div class="card mb-4">
+        <div class="card-header">
+            <div class="flex justify-between items-center">
+                <div class="flex items-center gap-3">
+                    <div class="w-12 h-12 rounded-xl flex items-center justify-center
+                        {% if reservation.status == 'pending' %}bg-warning/10{% elif reservation.status == 'confirmed' %}bg-primary/10{% elif reservation.status == 'seated' %}bg-success/10{% elif reservation.status == 'cancelled' %}bg-error/10{% elif reservation.status == 'no_show' %}bg-dark/10{% else %}bg-gray-100{% endif %}">
+                        {% if reservation.status == 'pending' %}
+                            {% icon "time-outline" css_class="text-2xl text-warning" %}
+                        {% elif reservation.status == 'confirmed' %}
+                            {% icon "checkmark-circle-outline" css_class="text-2xl text-primary" %}
+                        {% elif reservation.status == 'seated' %}
+                            {% icon "restaurant-outline" css_class="text-2xl text-success" %}
+                        {% elif reservation.status == 'completed' %}
+                            {% icon "checkmark-done-outline" css_class="text-2xl text-medium" %}
+                        {% elif reservation.status == 'cancelled' %}
+                            {% icon "close-circle-outline" css_class="text-2xl text-error" %}
+                        {% elif reservation.status == 'no_show' %}
+                            {% icon "eye-off-outline" css_class="text-2xl text-dark" %}
+                        {% endif %}
+                    </div>
+                    <div>
+                        <h2 class="text-xl font-bold">{{ reservation.guest_name }}</h2>
+                        <span class="text-sm text-muted">{{ reservation.date|date:"d/m/Y" }} {% trans "at" %} {{ reservation.time|time:"H:i" }}</span>
+                    </div>
+                </div>
+                <div class="flex items-center gap-2">
+                    <span class="badge color-{% if reservation.status == 'pending' %}warning{% elif reservation.status == 'confirmed' %}primary{% elif reservation.status == 'seated' %}success{% elif reservation.status == 'completed' %}medium{% elif reservation.status == 'cancelled' %}error{% elif reservation.status == 'no_show' %}dark{% else %}medium{% endif %}">
+                        {{ reservation.get_status_display }}
+                    </span>
+                    <button class="btn btn-sm btn-outline"
+                        hx-get="{% url 'reservations:edit' reservation.pk %}"
+                        hx-target="#main-content-area"
+                        hx-push-url="true">
+                        {% icon "create-outline" css_class="mr-1" %}
+                        {% trans "Edit" %}
+                    </button>
+                </div>
+            </div>
+        </div>
+        <div class="card-body">
+            <!-- Quick Stats -->
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <div class="p-3 rounded-lg bg-base-100">
+                    <div class="text-xs text-muted uppercase font-semibold mb-1">{% trans "Party Size" %}</div>
+                    <div class="text-lg font-semibold">{{ reservation.party_size }} {% trans "guests" %}</div>
+                </div>
+                <div class="p-3 rounded-lg bg-base-100">
+                    <div class="text-xs text-muted uppercase font-semibold mb-1">{% trans "Duration" %}</div>
+                    <div class="text-lg font-semibold">{{ reservation.duration_minutes }} {% trans "min" %}</div>
+                </div>
+                <div class="p-3 rounded-lg bg-base-100">
+                    <div class="text-xs text-muted uppercase font-semibold mb-1">{% trans "Table" %}</div>
+                    <div class="text-lg font-semibold">{% if reservation.table %}{{ reservation.table_display }}{% else %}<span class="text-muted">-</span>{% endif %}</div>
+                </div>
+                <div class="p-3 rounded-lg bg-base-100">
+                    <div class="text-xs text-muted uppercase font-semibold mb-1">{% trans "Created" %}</div>
+                    <div class="text-lg font-semibold">{{ reservation.created_at|date:"d/m" }}</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Status Actions -->
+    {% if reservation.status != 'completed' and reservation.status != 'cancelled' and reservation.status != 'no_show' %}
+    <div class="card mb-4">
+        <div class="card-header">
+            <h3 class="card-title">{% trans "Actions" %}</h3>
+        </div>
+        <div class="card-body">
+            <div class="flex flex-wrap gap-2">
+                {% if reservation.can_be_confirmed %}
+                <button class="btn btn-sm color-primary"
+                    onclick="updateReservationStatus('{{ reservation.pk }}', 'confirm')">
+                    {% icon "checkmark-circle-outline" css_class="mr-1" %}
+                    {% trans "Confirm" %}
+                </button>
+                {% endif %}
+
+                {% if reservation.can_be_seated %}
+                <button class="btn color-success btn-sm"
+                    onclick="updateReservationStatus('{{ reservation.pk }}', 'seat')">
+                    {% icon "restaurant-outline" css_class="mr-1" %}
+                    {% trans "Seat" %}
+                </button>
+                {% endif %}
+
+                {% if reservation.can_be_completed %}
+                <button class="btn btn-sm btn-outline"
+                    onclick="updateReservationStatus('{{ reservation.pk }}', 'complete')">
+                    {% icon "checkmark-done-outline" css_class="mr-1" %}
+                    {% trans "Complete" %}
+                </button>
+                {% endif %}
+
+                {% if reservation.can_be_cancelled %}
+                <button class="btn btn-sm btn-outline color-error"
+                    onclick="updateReservationStatus('{{ reservation.pk }}', 'cancel')">
+                    {% icon "close-circle-outline" css_class="mr-1" %}
+                    {% trans "Cancel" %}
+                </button>
+                {% endif %}
+
+                {% if reservation.can_be_confirmed or reservation.can_be_seated %}
+                <button class="btn btn--dark btn-outline btn-sm"
+                    onclick="updateReservationStatus('{{ reservation.pk }}', 'no-show')">
+                    {% icon "eye-off-outline" css_class="mr-1" %}
+                    {% trans "No Show" %}
+                </button>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Guest Details -->
+    <div class="card mb-4">
+        <div class="card-header">
+            <h3 class="card-title">{% trans "Guest Details" %}</h3>
+        </div>
+        <div class="card-body p-0">
+            <div class="list">
+                <div class="list-item">
+                    <div class="list-item-start">
+                        {% icon "person-outline" css_class="text-xl text-primary" %}
+                    </div>
+                    <div class="list-item-content">
+                        <div class="list-item-label">{% trans "Name" %}</div>
+                    </div>
+                    <div class="list-item-end text-muted">{{ reservation.guest_name }}</div>
+                </div>
+                {% if reservation.guest_phone %}
+                <div class="list-item">
+                    <div class="list-item-start">
+                        {% icon "call-outline" css_class="text-xl text-primary" %}
+                    </div>
+                    <div class="list-item-content">
+                        <div class="list-item-label">{% trans "Phone" %}</div>
+                    </div>
+                    <div class="list-item-end text-muted">{{ reservation.guest_phone }}</div>
+                </div>
+                {% endif %}
+                {% if reservation.guest_email %}
+                <div class="list-item">
+                    <div class="list-item-start">
+                        {% icon "mail-outline" css_class="text-xl text-primary" %}
+                    </div>
+                    <div class="list-item-content">
+                        <div class="list-item-label">{% trans "Email" %}</div>
+                    </div>
+                    <div class="list-item-end text-muted">{{ reservation.guest_email }}</div>
+                </div>
+                {% endif %}
+                {% if reservation.customer %}
+                <div class="list-item">
+                    <div class="list-item-start">
+                        {% icon "people-outline" css_class="text-xl text-primary" %}
+                    </div>
+                    <div class="list-item-content">
+                        <div class="list-item-label">{% trans "Linked Customer" %}</div>
+                        <div class="list-item-note">{{ reservation.customer }}</div>
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Reservation Timeline -->
+    <div class="card mb-4">
+        <div class="card-header">
+            <h3 class="card-title">{% trans "Timeline" %}</h3>
+        </div>
+        <div class="card-body p-0">
+            <div class="list">
+                <div class="list-item">
+                    <div class="list-item-content">
+                        <div class="list-item-label">{% trans "Created" %}</div>
+                    </div>
+                    <div class="list-item-end text-muted">{{ reservation.created_at|date:"d/m/Y H:i" }}</div>
+                </div>
+                {% if reservation.confirmed_at %}
+                <div class="list-item">
+                    <div class="list-item-content">
+                        <div class="list-item-label">{% trans "Confirmed" %}</div>
+                    </div>
+                    <div class="list-item-end text-muted">{{ reservation.confirmed_at|date:"d/m/Y H:i" }}</div>
+                </div>
+                {% endif %}
+                {% if reservation.seated_at %}
+                <div class="list-item">
+                    <div class="list-item-content">
+                        <div class="list-item-label">{% trans "Seated" %}</div>
+                    </div>
+                    <div class="list-item-end text-muted">{{ reservation.seated_at|date:"d/m/Y H:i" }}</div>
+                </div>
+                {% endif %}
+                {% if reservation.completed_at %}
+                <div class="list-item">
+                    <div class="list-item-content">
+                        <div class="list-item-label">{% trans "Completed" %}</div>
+                    </div>
+                    <div class="list-item-end text-muted">{{ reservation.completed_at|date:"d/m/Y H:i" }}</div>
+                </div>
+                {% endif %}
+                {% if reservation.cancelled_at %}
+                <div class="list-item">
+                    <div class="list-item-content">
+                        <div class="list-item-label">{% trans "Cancelled" %}</div>
+                    </div>
+                    <div class="list-item-end text-muted">{{ reservation.cancelled_at|date:"d/m/Y H:i" }}</div>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Notes -->
+    {% if reservation.notes or reservation.internal_notes %}
+    <div class="card mb-4">
+        <div class="card-header">
+            <h3 class="card-title">{% trans "Notes" %}</h3>
+        </div>
+        <div class="card-body space-y-3">
+            {% if reservation.notes %}
+            <div>
+                <div class="text-xs text-muted uppercase font-semibold mb-1">{% trans "Guest Notes" %}</div>
+                <p>{{ reservation.notes }}</p>
+            </div>
+            {% endif %}
+            {% if reservation.internal_notes %}
+            <div>
+                <div class="text-xs text-muted uppercase font-semibold mb-1">{% trans "Internal Notes" %}</div>
+                <p>{{ reservation.internal_notes }}</p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Cancellation Reason -->
+    {% if reservation.status == 'cancelled' and reservation.cancellation_reason %}
+    <div class="card mb-4">
+        <div class="card-header">
+            <h3 class="card-title text-error">{% trans "Cancellation Reason" %}</h3>
+        </div>
+        <div class="card-body">
+            <p>{{ reservation.cancellation_reason }}</p>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Danger Zone -->
+    {% if reservation.status != 'completed' %}
+    <div class="card">
+        <div class="card-header">
+            <h3 class="card-title text-error">{% trans "Danger Zone" %}</h3>
+        </div>
+        <div class="card-body">
+            <div class="flex items-center justify-between">
+                <div>
+                    <h4 class="font-semibold">{% trans "Delete Reservation" %}</h4>
+                    <p class="text-sm text-muted">{% trans "This action cannot be undone" %}</p>
+                </div>
+                <button class="btn btn-sm btn-outline color-error"
+                    onclick="deleteReservation('{{ reservation.pk }}', '{{ reservation.guest_name|escapejs }}')">
+                    {% icon "trash-outline" css_class="mr-1" %}
+                    {% trans "Delete" %}
+                </button>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</div>
+
+<script>
+async function updateReservationStatus(id, action) {
+    const actions = {
+        'confirm': '{% url "reservations:confirm" "00000000-0000-0000-0000-000000000000" %}',
+        'seat': '{% url "reservations:seat" "00000000-0000-0000-0000-000000000000" %}',
+        'complete': '{% url "reservations:complete" "00000000-0000-0000-0000-000000000000" %}',
+        'cancel': '{% url "reservations:cancel" "00000000-0000-0000-0000-000000000000" %}',
+        'no-show': '{% url "reservations:no_show" "00000000-0000-0000-0000-000000000000" %}'
+    };
+
+    const url = actions[action].replace('00000000-0000-0000-0000-000000000000', id);
+
+    if (action === 'cancel') {
+        const reason = prompt('{% trans "Cancellation reason (optional):" %}');
+        if (reason === null) return;
+        try {
+            const formData = new FormData();
+            formData.append('reason', reason);
+            const response = await fetch(url, {
+                method: 'POST',
+                headers: {'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]')?.value || '{{ csrf_token }}'},
+                body: formData
+            });
+            if (response.ok) {
+                htmx.ajax('GET', '{% url "reservations:detail" reservation.pk %}', {target: '#main-content-area', pushUrl: false});
+            }
+        } catch (e) { console.error(e); }
+        return;
+    }
+
+    if (action === 'no-show' && !confirm('{% trans "Mark this reservation as no-show?" %}')) return;
+
+    try {
+        const response = await fetch(url, {
+            method: 'POST',
+            headers: {'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]')?.value || '{{ csrf_token }}'}
+        });
+        if (response.ok) {
+            htmx.ajax('GET', '{% url "reservations:detail" reservation.pk %}', {target: '#main-content-area', pushUrl: false});
+        }
+    } catch (e) { console.error(e); }
+}
+
+async function deleteReservation(id, name) {
+    if (!confirm('{% trans "Are you sure you want to delete the reservation for" %} "' + name + '"?')) return;
+    try {
+        const response = await fetch('{% url "reservations:delete" "00000000-0000-0000-0000-000000000000" %}'.replace('00000000-0000-0000-0000-000000000000', id), {
+            method: 'POST',
+            headers: {'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]')?.value || '{{ csrf_token }}'}
+        });
+        if (response.ok) {
+            htmx.ajax('GET', '{% url "reservations:today" %}', {target: '#main-content-area', pushUrl: true});
+        }
+    } catch (e) { console.error(e); }
+}
+</script>

@@ -1,0 +1,120 @@
+{% load i18n djicons %}
+
+<div class="p-4">
+    <!-- Page Header -->
+    <div class="mb-6">
+        <div class="flex justify-between items-center">
+            <div>
+                <h1 class="text-3xl font-bold">{% trans "Calendar" %}</h1>
+                <p class="text-sm mt-2 text-muted">{% trans "Browse reservations by date" %}</p>
+            </div>
+            <button class="btn color-primary"
+                hx-get="{% url 'reservations:create' %}"
+                hx-target="#main-content-area"
+                hx-push-url="true">
+                {% icon "add-outline" css_class="mr-2" %}
+                {% trans "New Reservation" %}
+            </button>
+        </div>
+    </div>
+
+    <!-- Date Picker -->
+    <div class="card mb-4">
+        <div class="card-body">
+            <div class="flex items-center gap-3">
+                <div class="flex-1">
+                    <label class="block text-sm font-medium mb-1">{% trans "Select Date" %}</label>
+                    <input type="date" name="date" value="{{ selected_date|date:'Y-m-d' }}"
+                        class="input w-full"
+                        hx-get="{% url 'reservations:calendar' %}"
+                        hx-trigger="change"
+                        hx-target="#main-content-area"
+                        hx-push-url="true">
+                </div>
+                <div class="flex gap-2 pt-5">
+                    <button class="btn btn-sm btn-outline"
+                        hx-get="{% url 'reservations:today' %}"
+                        hx-target="#main-content-area"
+                        hx-push-url="true">
+                        {% trans "Today" %}
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Selected Date Header -->
+    <div class="flex items-center justify-between mb-4">
+        <h2 class="text-xl font-semibold">{{ selected_date|date:"l, d F Y" }}</h2>
+        <span class="badge">{{ reservations|length }} {% trans "reservations" %}</span>
+    </div>
+
+    <!-- Reservations for Selected Date -->
+    <div class="card">
+        <div class="card-body p-0">
+            {% if reservations %}
+            <div class="list">
+                {% for r in reservations %}
+                <a hx-get="{% url 'reservations:detail' r.pk %}"
+                   hx-target="#main-content-area"
+                   hx-push-url="true"
+                   class="list-item list-item-clickable">
+                    <div class="list-item-start">
+                        <div class="w-10 h-10 rounded-lg flex items-center justify-center
+                            {% if r.status == 'pending' %}bg-warning/10{% elif r.status == 'confirmed' %}bg-primary/10{% elif r.status == 'seated' %}bg-success/10{% else %}bg-gray-100{% endif %}">
+                            <span class="text-sm font-bold
+                                {% if r.status == 'pending' %}text-warning{% elif r.status == 'confirmed' %}text-primary{% elif r.status == 'seated' %}text-success{% else %}text-muted{% endif %}">{{ r.time|time:"H:i" }}</span>
+                        </div>
+                    </div>
+                    <div class="list-item-content">
+                        <div class="list-item-label">{{ r.guest_name }}</div>
+                        <div class="list-item-note">
+                            {{ r.party_size }} {% trans "guests" %}
+                            {% if r.table %} &middot; {{ r.table_display }}{% endif %}
+                            {% if r.notes %} &middot; {% icon "chatbubble-outline" css_class="text-xs" %}{% endif %}
+                        </div>
+                    </div>
+                    <div class="list-item-end">
+                        <span class="badge color-{% if r.status == 'pending' %}warning{% elif r.status == 'confirmed' %}primary{% elif r.status == 'seated' %}success{% elif r.status == 'completed' %}medium{% elif r.status == 'cancelled' %}error{% elif r.status == 'no_show' %}dark{% else %}medium{% endif %}">
+                            {{ r.get_status_display }}
+                        </span>
+                    </div>
+                </a>
+                {% endfor %}
+            </div>
+            {% else %}
+            <div class="text-center py-12 text-muted">
+                {% icon "calendar-clear-outline" css_class="text-5xl block mx-auto mb-2" %}
+                <p class="mt-2 font-semibold">{% trans "No reservations for this date" %}</p>
+                <p class="text-sm mt-1">{% trans "Select a different date or create a new reservation" %}</p>
+                <button class="btn btn-sm color-primary mt-3"
+                    hx-get="{% url 'reservations:create' %}"
+                    hx-target="#main-content-area"
+                    hx-push-url="true">
+                    {% icon "add-outline" css_class="mr-1" %}
+                    {% trans "New Reservation" %}
+                </button>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Blocked Dates Info -->
+    {% if blocked_dates %}
+    <div class="card mt-4">
+        <div class="card-header">
+            <h3 class="card-title">
+                {% icon "close-circle-outline" css_class="text-error mr-2" %}
+                {% trans "Blocked Dates This Month" %}
+            </h3>
+        </div>
+        <div class="card-body">
+            <div class="flex flex-wrap gap-2">
+                {% for bd in blocked_dates %}
+                <span class="badge color-error badge-sm">{{ bd|date:"d M" }}</span>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</div>

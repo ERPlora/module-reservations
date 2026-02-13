@@ -1,0 +1,345 @@
+{% load i18n djicons %}
+
+<div class="p-4">
+    <!-- Page Header -->
+    <div class="mb-6">
+        <div class="flex justify-between items-center">
+            <div>
+                <h1 class="text-3xl font-bold">{% trans "Settings" %}</h1>
+                <p class="text-sm mt-2 text-muted">{% trans "Reservation module configuration" %}</p>
+            </div>
+            <button class="btn color-warning btn-outline btn-sm"
+                onclick="resetSettings()">
+                {% icon "refresh-outline" css_class="mr-1" %}
+                {% trans "Reset to Defaults" %}
+            </button>
+        </div>
+    </div>
+
+    <!-- Booking Rules -->
+    <div class="card mb-4">
+        <div class="card-header">
+            <h3 class="card-title">
+                {% icon "settings-outline" css_class="text-primary mr-2" %}
+                {% trans "Booking Rules" %}
+            </h3>
+        </div>
+        <div class="card-body p-0">
+            <div class="list">
+                <div class="list-item">
+                    <div class="list-item-content">
+                        <div class="list-item-label">{% trans "Time Slot Duration" %}</div>
+                        <div class="list-item-note">{% trans "Duration of each reservation slot in minutes" %}</div>
+                    </div>
+                    <div class="list-item-end" style="min-width: 100px;">
+                        <input type="number" name="time_slot_duration" value="{{ config.time_slot_duration }}"
+                            class="input input--sm text-right w-20"
+                            min="15" max="120" step="15"
+                            hx-post="{% url 'reservations:settings_input' %}"
+                            hx-trigger="change"
+                            hx-swap="none"
+                            hx-vals='{"name": "time_slot_duration"}'>
+                    </div>
+                </div>
+                <div class="list-item">
+                    <div class="list-item-content">
+                        <div class="list-item-label">{% trans "Default Duration" %}</div>
+                        <div class="list-item-note">{% trans "Default reservation duration in minutes" %}</div>
+                    </div>
+                    <div class="list-item-end" style="min-width: 100px;">
+                        <input type="number" name="default_duration_minutes" value="{{ config.default_duration_minutes }}"
+                            class="input input--sm text-right w-20"
+                            min="30" max="480" step="15"
+                            hx-post="{% url 'reservations:settings_input' %}"
+                            hx-trigger="change"
+                            hx-swap="none"
+                            hx-vals='{"name": "default_duration_minutes"}'>
+                    </div>
+                </div>
+                <div class="list-item">
+                    <div class="list-item-content">
+                        <div class="list-item-label">{% trans "Minimum Party Size" %}</div>
+                        <div class="list-item-note">{% trans "Smallest group that can make a reservation" %}</div>
+                    </div>
+                    <div class="list-item-end" style="min-width: 100px;">
+                        <input type="number" name="min_party_size" value="{{ config.min_party_size }}"
+                            class="input input--sm text-right w-20"
+                            min="1" max="50"
+                            hx-post="{% url 'reservations:settings_input' %}"
+                            hx-trigger="change"
+                            hx-swap="none"
+                            hx-vals='{"name": "min_party_size"}'>
+                    </div>
+                </div>
+                <div class="list-item">
+                    <div class="list-item-content">
+                        <div class="list-item-label">{% trans "Maximum Party Size" %}</div>
+                        <div class="list-item-note">{% trans "Largest group that can make a reservation" %}</div>
+                    </div>
+                    <div class="list-item-end" style="min-width: 100px;">
+                        <input type="number" name="max_party_size" value="{{ config.max_party_size }}"
+                            class="input input--sm text-right w-20"
+                            min="1" max="100"
+                            hx-post="{% url 'reservations:settings_input' %}"
+                            hx-trigger="change"
+                            hx-swap="none"
+                            hx-vals='{"name": "max_party_size"}'>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Advance Booking -->
+    <div class="card mb-4">
+        <div class="card-header">
+            <h3 class="card-title">
+                {% icon "calendar-outline" css_class="text-primary mr-2" %}
+                {% trans "Advance Booking" %}
+            </h3>
+        </div>
+        <div class="card-body p-0">
+            <div class="list">
+                <div class="list-item">
+                    <div class="list-item-content">
+                        <div class="list-item-label">{% trans "Minimum Advance (hours)" %}</div>
+                        <div class="list-item-note">{% trans "How many hours in advance guests must book" %}</div>
+                    </div>
+                    <div class="list-item-end" style="min-width: 100px;">
+                        <input type="number" name="min_advance_hours" value="{{ config.min_advance_hours }}"
+                            class="input input--sm text-right w-20"
+                            min="0" max="168"
+                            hx-post="{% url 'reservations:settings_input' %}"
+                            hx-trigger="change"
+                            hx-swap="none"
+                            hx-vals='{"name": "min_advance_hours"}'>
+                    </div>
+                </div>
+                <div class="list-item">
+                    <div class="list-item-content">
+                        <div class="list-item-label">{% trans "Maximum Advance (days)" %}</div>
+                        <div class="list-item-note">{% trans "How many days in advance guests can book" %}</div>
+                    </div>
+                    <div class="list-item-end" style="min-width: 100px;">
+                        <input type="number" name="max_advance_days" value="{{ config.max_advance_days }}"
+                            class="input input--sm text-right w-20"
+                            min="1" max="365"
+                            hx-post="{% url 'reservations:settings_input' %}"
+                            hx-trigger="change"
+                            hx-swap="none"
+                            hx-vals='{"name": "max_advance_days"}'>
+                    </div>
+                </div>
+                <div class="list-item">
+                    <div class="list-item-content">
+                        <div class="list-item-label">{% trans "No-Show Window (minutes)" %}</div>
+                        <div class="list-item-note">{% trans "Minutes after reservation time to mark as no-show" %}</div>
+                    </div>
+                    <div class="list-item-end" style="min-width: 100px;">
+                        <input type="number" name="no_show_window_minutes" value="{{ config.no_show_window_minutes }}"
+                            class="input input--sm text-right w-20"
+                            min="5" max="60"
+                            hx-post="{% url 'reservations:settings_input' %}"
+                            hx-trigger="change"
+                            hx-swap="none"
+                            hx-vals='{"name": "no_show_window_minutes"}'>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Confirmation & Requirements -->
+    <div class="card mb-4">
+        <div class="card-header">
+            <h3 class="card-title">
+                {% icon "checkmark-circle-outline" css_class="text-success mr-2" %}
+                {% trans "Confirmation & Requirements" %}
+            </h3>
+        </div>
+        <div class="card-body p-0">
+            <div class="list">
+                <div class="list-item">
+                    <div class="list-item-content">
+                        <div class="list-item-label">{% trans "Auto-confirm Reservations" %}</div>
+                        <div class="list-item-note">{% trans "Automatically confirm new reservations without manual review" %}</div>
+                    </div>
+                    <div class="list-item-end">
+                        <label class="toggle">
+                            <input type="checkbox" {% if config.auto_confirm %}checked{% endif %}
+                                hx-post="{% url 'reservations:settings_toggle' %}"
+                                hx-trigger="change"
+                                hx-swap="none"
+                                hx-vals='js:{"name": "auto_confirm", "value": event.target.checked ? "true" : "false"}'>
+                            
+                        </label>
+                    </div>
+                </div>
+                <div class="list-item">
+                    <div class="list-item-content">
+                        <div class="list-item-label">{% trans "Require Phone Number" %}</div>
+                        <div class="list-item-note">{% trans "Phone number is required when making a reservation" %}</div>
+                    </div>
+                    <div class="list-item-end">
+                        <label class="toggle">
+                            <input type="checkbox" {% if config.require_phone %}checked{% endif %}
+                                hx-post="{% url 'reservations:settings_toggle' %}"
+                                hx-trigger="change"
+                                hx-swap="none"
+                                hx-vals='js:{"name": "require_phone", "value": event.target.checked ? "true" : "false"}'>
+                            
+                        </label>
+                    </div>
+                </div>
+                <div class="list-item">
+                    <div class="list-item-content">
+                        <div class="list-item-label">{% trans "Require Email" %}</div>
+                        <div class="list-item-note">{% trans "Email address is required when making a reservation" %}</div>
+                    </div>
+                    <div class="list-item-end">
+                        <label class="toggle">
+                            <input type="checkbox" {% if config.require_email %}checked{% endif %}
+                                hx-post="{% url 'reservations:settings_toggle' %}"
+                                hx-trigger="change"
+                                hx-swap="none"
+                                hx-vals='js:{"name": "require_email", "value": event.target.checked ? "true" : "false"}'>
+                            
+                        </label>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Notifications -->
+    <div class="card mb-4">
+        <div class="card-header">
+            <h3 class="card-title">
+                {% icon "notifications-outline" css_class="text-warning mr-2" %}
+                {% trans "Notifications" %}
+            </h3>
+        </div>
+        <div class="card-body p-0">
+            <div class="list">
+                <div class="list-item">
+                    <div class="list-item-content">
+                        <div class="list-item-label">{% trans "Send Confirmation Email" %}</div>
+                        <div class="list-item-note">{% trans "Email guests when their reservation is confirmed" %}</div>
+                    </div>
+                    <div class="list-item-end">
+                        <label class="toggle">
+                            <input type="checkbox" {% if config.send_confirmation_email %}checked{% endif %}
+                                hx-post="{% url 'reservations:settings_toggle' %}"
+                                hx-trigger="change"
+                                hx-swap="none"
+                                hx-vals='js:{"name": "send_confirmation_email", "value": event.target.checked ? "true" : "false"}'>
+                            
+                        </label>
+                    </div>
+                </div>
+                <div class="list-item">
+                    <div class="list-item-content">
+                        <div class="list-item-label">{% trans "Send Reminder Email" %}</div>
+                        <div class="list-item-note">{% trans "Email guests before their reservation" %}</div>
+                    </div>
+                    <div class="list-item-end">
+                        <label class="toggle">
+                            <input type="checkbox" {% if config.send_reminder_email %}checked{% endif %}
+                                hx-post="{% url 'reservations:settings_toggle' %}"
+                                hx-trigger="change"
+                                hx-swap="none"
+                                hx-vals='js:{"name": "send_reminder_email", "value": event.target.checked ? "true" : "false"}'>
+                            
+                        </label>
+                    </div>
+                </div>
+                <div class="list-item">
+                    <div class="list-item-content">
+                        <div class="list-item-label">{% trans "Reminder Hours Before" %}</div>
+                        <div class="list-item-note">{% trans "Send reminder this many hours before the reservation" %}</div>
+                    </div>
+                    <div class="list-item-end" style="min-width: 100px;">
+                        <input type="number" name="reminder_hours_before" value="{{ config.reminder_hours_before }}"
+                            class="input input--sm text-right w-20"
+                            min="1" max="72"
+                            hx-post="{% url 'reservations:settings_input' %}"
+                            hx-trigger="change"
+                            hx-swap="none"
+                            hx-vals='{"name": "reminder_hours_before"}'>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Links -->
+    <div class="card">
+        <div class="card-header">
+            <h3 class="card-title">{% trans "Quick Actions" %}</h3>
+        </div>
+        <div class="card-body p-0">
+            <div class="list">
+                <a hx-get="{% url 'reservations:availability' %}"
+                   hx-target="#main-content-area"
+                   hx-push-url="true"
+                   class="list-item list-item-clickable">
+                    <div class="list-item-start">
+                        {% icon "time-outline" css_class="text-xl text-primary" %}
+                    </div>
+                    <div class="list-item-content">
+                        <div class="list-item-label">{% trans "Manage Time Slots" %}</div>
+                        <div class="list-item-note">{% trans "Configure available reservation times" %}</div>
+                    </div>
+                    <div class="list-item-end">
+                        {% icon "chevron-forward-outline" css_class="text-muted" %}
+                    </div>
+                </a>
+                <a hx-get="{% url 'reservations:create' %}"
+                   hx-target="#main-content-area"
+                   hx-push-url="true"
+                   class="list-item list-item-clickable">
+                    <div class="list-item-start">
+                        {% icon "add-circle-outline" css_class="text-xl text-success" %}
+                    </div>
+                    <div class="list-item-content">
+                        <div class="list-item-label">{% trans "Create Reservation" %}</div>
+                        <div class="list-item-note">{% trans "Manually create a new reservation" %}</div>
+                    </div>
+                    <div class="list-item-end">
+                        {% icon "chevron-forward-outline" css_class="text-muted" %}
+                    </div>
+                </a>
+                <a hx-get="{% url 'reservations:waitlist' %}"
+                   hx-target="#main-content-area"
+                   hx-push-url="true"
+                   class="list-item list-item-clickable">
+                    <div class="list-item-start">
+                        {% icon "people-outline" css_class="text-xl text-warning" %}
+                    </div>
+                    <div class="list-item-content">
+                        <div class="list-item-label">{% trans "View Waitlist" %}</div>
+                        <div class="list-item-note">{% trans "See guests waiting for available tables" %}</div>
+                    </div>
+                    <div class="list-item-end">
+                        {% icon "chevron-forward-outline" css_class="text-muted" %}
+                    </div>
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+async function resetSettings() {
+    if (!confirm('{% trans "Reset all settings to their default values? This cannot be undone." %}')) return;
+    try {
+        const response = await fetch('{% url "reservations:settings_reset" %}', {
+            method: 'POST',
+            headers: {'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]')?.value || '{{ csrf_token }}'}
+        });
+        if (response.ok) {
+            htmx.ajax('GET', '{% url "reservations:settings" %}', {target: '#main-content-area', pushUrl: false});
+        }
+    } catch (e) { console.error(e); }
+}
+</script>
