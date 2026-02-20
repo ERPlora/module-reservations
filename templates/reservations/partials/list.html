@@ -23,7 +23,7 @@
         <div class="card-body">
             <div class="grid grid-cols-1 md:grid-cols-4 gap-3">
                 <div class="input-group">
-                    <span class="input-group__icon">
+                    <span class="input-group-icon">
                         {% icon "search-outline" %}
                     </span>
                     <input type="text" name="q" value="{{ search }}"
@@ -75,31 +75,31 @@
             {% if reservations %}
             <div class="overflow-x-auto">
                 <table class="table w-full">
-                    <thead class="table__head">
+                    <thead class="table-head">
                         <tr>
-                            <th class="table__th">{% trans "Guest" %}</th>
-                            <th class="table__th">{% trans "Date" %}</th>
-                            <th class="table__th">{% trans "Time" %}</th>
-                            <th class="table__th">{% trans "Party" %}</th>
-                            <th class="table__th">{% trans "Table" %}</th>
-                            <th class="table__th">{% trans "Status" %}</th>
+                            <th class="table-th">{% trans "Guest" %}</th>
+                            <th class="table-th">{% trans "Date" %}</th>
+                            <th class="table-th">{% trans "Time" %}</th>
+                            <th class="table-th">{% trans "Party" %}</th>
+                            <th class="table-th">{% trans "Table" %}</th>
+                            <th class="table-th">{% trans "Status" %}</th>
                         </tr>
                     </thead>
-                    <tbody class="table__body">
+                    <tbody class="table-body">
                         {% for r in reservations %}
-                        <tr class="table__row cursor-pointer"
+                        <tr class="table-row cursor-pointer"
                             hx-get="{% url 'reservations:detail' r.pk %}"
                             hx-target="#main-content-area"
                             hx-push-url="true">
-                            <td class="table__td">
+                            <td class="table-td">
                                 <div class="font-semibold">{{ r.guest_name }}</div>
                                 {% if r.guest_phone %}<div class="text-xs text-muted">{{ r.guest_phone }}</div>{% endif %}
                             </td>
-                            <td class="table__td">{{ r.date|date:"d/m/Y" }}</td>
-                            <td class="table__td font-mono">{{ r.time|time:"H:i" }}</td>
-                            <td class="table__td">{{ r.party_size }}</td>
-                            <td class="table__td">{% if r.table %}{{ r.table_display }}{% else %}<span class="text-muted">-</span>{% endif %}</td>
-                            <td class="table__td">
+                            <td class="table-td">{{ r.date|date:"d/m/Y" }}</td>
+                            <td class="table-td font-mono">{{ r.time|time:"H:i" }}</td>
+                            <td class="table-td">{{ r.party_size }}</td>
+                            <td class="table-td">{% if r.table %}{{ r.table_display }}{% else %}<span class="text-muted">-</span>{% endif %}</td>
+                            <td class="table-td">
                                 <span class="badge badge-sm color-{% if r.status == 'pending' %}warning{% elif r.status == 'confirmed' %}primary{% elif r.status == 'seated' %}success{% elif r.status == 'completed' %}medium{% elif r.status == 'cancelled' %}error{% elif r.status == 'no_show' %}dark{% else %}medium{% endif %}">
                                     {{ r.get_status_display }}
                                 </span>
