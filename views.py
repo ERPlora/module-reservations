@@ -461,12 +461,12 @@ def api_reservations_for_date(request):
     hub = _hub(request)
     date_str = request.GET.get('date')
     if not date_str:
-        return JsonResponse({'success': False, 'error': 'Date required'}, status=400)
+        return JsonResponse({'success': False, 'error': _('Date required')}, status=400)
 
     try:
         date = datetime.strptime(date_str, '%Y-%m-%d').date()
     except ValueError:
-        return JsonResponse({'success': False, 'error': 'Invalid date format'}, status=400)
+        return JsonResponse({'success': False, 'error': _('Invalid date format')}, status=400)
 
     reservations = Reservation.get_for_date(hub, date)
 
@@ -497,13 +497,13 @@ def api_check_availability(request):
     party_size = int(request.GET.get('party_size', 2))
 
     if not date_str or not time_str:
-        return JsonResponse({'success': False, 'error': 'Date and time required'}, status=400)
+        return JsonResponse({'success': False, 'error': _('Date and time required')}, status=400)
 
     try:
         date = datetime.strptime(date_str, '%Y-%m-%d').date()
         time = datetime.strptime(time_str, '%H:%M').time()
     except ValueError:
-        return JsonResponse({'success': False, 'error': 'Invalid date/time format'}, status=400)
+        return JsonResponse({'success': False, 'error': _('Invalid date/time format')}, status=400)
 
     blocked = BlockedDate.is_blocked(hub, date, time)
     existing = Reservation.objects.filter(
@@ -563,7 +563,7 @@ def settings_save(request):
         config.save()
         return JsonResponse({'success': True, 'message': _('Settings saved')})
     except json.JSONDecodeError:
-        return JsonResponse({'success': False, 'error': 'Invalid JSON'}, status=400)
+        return JsonResponse({'success': False, 'error': _('Invalid JSON')}, status=400)
 
 
 @login_required
