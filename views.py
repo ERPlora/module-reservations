@@ -14,7 +14,7 @@ from django.views.decorators.http import require_POST, require_GET
 from django.utils.translation import gettext as _
 from django.utils import timezone
 
-from apps.accounts.decorators import login_required
+from apps.accounts.decorators import login_required, permission_required
 from apps.core.htmx import htmx_view
 
 from .models import (
@@ -524,6 +524,7 @@ def api_check_availability(request):
 # ==============================================================================
 
 @login_required
+@permission_required('reservations.manage_settings')
 @htmx_view('reservations/pages/settings.html', 'reservations/partials/settings.html')
 def settings(request):
     """Reservation settings page."""
@@ -533,6 +534,7 @@ def settings(request):
 
 
 @login_required
+@permission_required('reservations.manage_settings')
 @require_POST
 def settings_save(request):
     """Save all settings."""
@@ -567,6 +569,7 @@ def settings_save(request):
 
 
 @login_required
+@permission_required('reservations.manage_settings')
 @require_POST
 def settings_toggle(request):
     """Toggle a boolean setting."""

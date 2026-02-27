@@ -32,6 +32,8 @@ PERMISSIONS = [
     'reservations.change_waitlistentry',
     'reservations.view_reservationsettings',
     'reservations.change_reservationsettings',
+
+    'reservations.manage_settings',
 ]
 
 DEPENDENCIES = ['tables', 'customers']
