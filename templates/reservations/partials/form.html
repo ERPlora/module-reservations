@@ -1,15 +1,7 @@
 {% load djicons i18n djicons djicons %}
+<div data-back-url="{% if reservation %}{% url 'reservations:detail' reservation.pk %}{% else %}{% url 'reservations:today' %}{% endif %}" hidden></div>
 
 <div class="p-4">
-    <!-- Back Button -->
-    <button class="btn btn-ghost btn-sm mb-4"
-        hx-get="{% if reservation %}{% url 'reservations:detail' reservation.pk %}{% else %}{% url 'reservations:today' %}{% endif %}"
-        hx-target="#main-content-area"
-        hx-push-url="true">
-        {% icon "arrow-back-outline" css_class="mr-1" %}
-        {% trans "Back" %}
-    </button>
-
     <div class="mb-6">
         <h1 class="text-3xl font-bold">{% if reservation %}{% trans "Edit Reservation" %}{% else %}{% trans "New Reservation" %}{% endif %}</h1>
         {% if reservation %}
