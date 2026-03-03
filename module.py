@@ -37,3 +37,28 @@ PERMISSIONS = [
 ]
 
 DEPENDENCIES = ['tables', 'customers']
+
+ROLE_PERMISSIONS = {
+    "admin": ["*"],
+    "manager": [
+        "add_reservation",
+        "change_blockeddate",
+        "change_reservation",
+        "change_reservationsettings",
+        "change_timeslot",
+        "change_waitlistentry",
+        "view_blockeddate",
+        "view_reservation",
+        "view_reservationsettings",
+        "view_timeslot",
+        "view_waitlistentry",
+    ],
+    "employee": [
+        "add_reservation",
+        "view_blockeddate",
+        "view_reservation",
+        "view_reservationsettings",
+        "view_timeslot",
+        "view_waitlistentry",
+    ],
+}
