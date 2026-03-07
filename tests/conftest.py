@@ -3,30 +3,18 @@ Pytest fixtures for Reservations module tests.
 """
 
 import pytest
-from datetime import date, time, timedelta
-from django.conf import settings
+from datetime import time, timedelta
 from django.utils import timezone
-
-# Disable debug toolbar during tests to avoid djdt URL namespace errors
-if 'debug_toolbar' in settings.INSTALLED_APPS:
-    settings.INSTALLED_APPS = [
-        app for app in settings.INSTALLED_APPS if app != 'debug_toolbar'
-    ]
-if hasattr(settings, 'MIDDLEWARE'):
-    settings.MIDDLEWARE = [
-        m for m in settings.MIDDLEWARE
-        if 'debug_toolbar' not in m
-    ]
 
 from apps.accounts.models import LocalUser
 from apps.configuration.models import StoreConfig
 
 from reservations.models import (
     Reservation,
-    ReservationsConfig,
+    ReservationSettings,
     TimeSlot,
     BlockedDate,
-    WaitlistEntry
+    WaitlistEntry,
 )
 
 
@@ -39,7 +27,7 @@ def local_user(db):
         email='test@example.com',
         role='admin',
         pin_hash=make_password('1234'),
-        is_active=True
+        is_active=True,
     )
 
 
@@ -73,14 +61,14 @@ def auth_client(client, local_user, store_config):
 
 
 @pytest.fixture
-def reservations_config(db):
-    """Create reservations config."""
-    return ReservationsConfig.get_config()
+def reservation_settings(db):
+    """Create reservation settings."""
+    return ReservationSettings.objects.create()
 
 
 @pytest.fixture
 def reservation(db):
-    """Create a basic reservation."""
+    """Create a basic pending reservation."""
     tomorrow = timezone.now().date() + timedelta(days=1)
     return Reservation.objects.create(
         guest_name='John Doe',
@@ -89,7 +77,7 @@ def reservation(db):
         date=tomorrow,
         time=time(19, 0),
         party_size=4,
-        status=Reservation.STATUS_PENDING
+        status='pending',
     )
 
 
@@ -104,8 +92,8 @@ def confirmed_reservation(db):
         date=tomorrow,
         time=time(20, 0),
         party_size=2,
-        status=Reservation.STATUS_CONFIRMED,
-        confirmed_at=timezone.now()
+        status='confirmed',
+        confirmed_at=timezone.now(),
     )
 
 
@@ -120,10 +108,8 @@ def seated_reservation(db):
         date=today,
         time=time(18, 0),
         party_size=3,
-        status=Reservation.STATUS_SEATED,
+        status='seated',
         seated_at=timezone.now(),
-        table_id=1,
-        table_number='5'
     )
 
 
@@ -135,7 +121,7 @@ def time_slot(db):
         start_time=time(18, 0),
         end_time=time(22, 0),
         max_reservations=10,
-        is_active=True
+        is_active=True,
     )
 
 
@@ -146,7 +132,7 @@ def blocked_date(db):
     return BlockedDate.objects.create(
         date=future_date,
         reason='Holiday',
-        is_full_day=True
+        is_full_day=True,
     )
 
 
@@ -159,5 +145,5 @@ def waitlist_entry(db):
         guest_phone='+5555555555',
         date=tomorrow,
         preferred_time=time(19, 30),
-        party_size=6
+        party_size=6,
     )

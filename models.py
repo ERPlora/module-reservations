@@ -51,7 +51,9 @@ class ReservationSettings(HubBaseModel):
         db_table = 'reservations_settings'
         verbose_name = _('Reservation Settings')
         verbose_name_plural = _('Reservation Settings')
-        unique_together = [('hub_id',)]
+        constraints = [
+            models.UniqueConstraint(fields=['hub_id'], name='unique_reservation_settings_per_hub'),
+        ]
 
     def __str__(self):
         return f'Reservation Settings (hub {self.hub_id})'
@@ -90,7 +92,9 @@ class TimeSlot(HubBaseModel):
         verbose_name = _('Time Slot')
         verbose_name_plural = _('Time Slots')
         ordering = ['day_of_week', 'start_time']
-        unique_together = [('hub_id', 'day_of_week', 'start_time', 'end_time')]
+        constraints = [
+            models.UniqueConstraint(fields=['hub_id', 'day_of_week', 'start_time', 'end_time'], name='unique_timeslot_per_hub'),
+        ]
 
     def __str__(self):
         day_name = dict(self.DAYS_OF_WEEK).get(self.day_of_week, '?')
@@ -119,7 +123,9 @@ class BlockedDate(HubBaseModel):
         verbose_name = _('Blocked Date')
         verbose_name_plural = _('Blocked Dates')
         ordering = ['date']
-        unique_together = [('hub_id', 'date', 'blocked_from')]
+        constraints = [
+            models.UniqueConstraint(fields=['hub_id', 'date', 'blocked_from'], name='unique_blockeddate_per_hub'),
+        ]
 
     def __str__(self):
         if self.is_full_day:
