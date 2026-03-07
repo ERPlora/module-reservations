@@ -336,9 +336,9 @@ async function resetSettings() {
         const response = await fetch('{% url "reservations:settings_reset" %}', {
             method: 'POST',
             headers: {'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]')?.value || '{{ csrf_token }}'}
-        });
+        },
         if (response.ok) {
-            htmx.ajax('GET', '{% url "reservations:settings" %}', {target: '#main-content-area', pushUrl: false});
+            htmx.ajax('GET', '{% url "reservations:settings" %}', {target: '#main-content-area', pushUrl: false},
         }
     } catch (e) { console.error(e); }
 }

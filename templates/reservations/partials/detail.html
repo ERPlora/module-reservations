@@ -285,7 +285,7 @@ async function updateReservationStatus(id, action) {
         'complete': '{% url "reservations:complete" "00000000-0000-0000-0000-000000000000" %}',
         'cancel': '{% url "reservations:cancel" "00000000-0000-0000-0000-000000000000" %}',
         'no-show': '{% url "reservations:no_show" "00000000-0000-0000-0000-000000000000" %}'
-    };
+    },
 
     const url = actions[action].replace('00000000-0000-0000-0000-000000000000', id);
 
@@ -299,9 +299,9 @@ async function updateReservationStatus(id, action) {
                 method: 'POST',
                 headers: {'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]')?.value || '{{ csrf_token }}'},
                 body: formData
-            });
+            },
             if (response.ok) {
-                htmx.ajax('GET', '{% url "reservations:detail" reservation.pk %}', {target: '#main-content-area', pushUrl: false});
+                htmx.ajax('GET', '{% url "reservations:detail" reservation.pk %}', {target: '#main-content-area', pushUrl: false},
             }
         } catch (e) { console.error(e); }
         return;
@@ -313,9 +313,9 @@ async function updateReservationStatus(id, action) {
         const response = await fetch(url, {
             method: 'POST',
             headers: {'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]')?.value || '{{ csrf_token }}'}
-        });
+        },
         if (response.ok) {
-            htmx.ajax('GET', '{% url "reservations:detail" reservation.pk %}', {target: '#main-content-area', pushUrl: false});
+            htmx.ajax('GET', '{% url "reservations:detail" reservation.pk %}', {target: '#main-content-area', pushUrl: false},
         }
     } catch (e) { console.error(e); }
 }
@@ -326,9 +326,9 @@ async function deleteReservation(id, name) {
         const response = await fetch('{% url "reservations:delete" "00000000-0000-0000-0000-000000000000" %}'.replace('00000000-0000-0000-0000-000000000000', id), {
             method: 'POST',
             headers: {'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]')?.value || '{{ csrf_token }}'}
-        });
+        },
         if (response.ok) {
-            htmx.ajax('GET', '{% url "reservations:today" %}', {target: '#main-content-area', pushUrl: true});
+            htmx.ajax('GET', '{% url "reservations:today" %}', {target: '#main-content-area', pushUrl: true},
         }
     } catch (e) { console.error(e); }
 }

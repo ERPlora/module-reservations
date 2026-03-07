@@ -204,10 +204,10 @@ document.getElementById('slot-form').addEventListener('submit', async function(e
             method: 'POST',
             headers: {'X-CSRFToken': formData.get('csrfmiddlewaretoken')},
             body: formData
-        });
+        },
         const data = await response.json();
         if (data.success) {
-            htmx.ajax('GET', '{% url "reservations:availability" %}', {target: '#main-content-area', pushUrl: false});
+            htmx.ajax('GET', '{% url "reservations:availability" %}', {target: '#main-content-area', pushUrl: false},
         }
     } catch (e) { console.error(e); }
 });
@@ -221,10 +221,10 @@ document.getElementById('blocked-form').addEventListener('submit', async functio
             method: 'POST',
             headers: {'X-CSRFToken': formData.get('csrfmiddlewaretoken')},
             body: formData
-        });
+        },
         const data = await response.json();
         if (data.success) {
-            htmx.ajax('GET', '{% url "reservations:availability" %}', {target: '#main-content-area', pushUrl: false});
+            htmx.ajax('GET', '{% url "reservations:availability" %}', {target: '#main-content-area', pushUrl: false},
         }
     } catch (e) { console.error(e); }
 });
@@ -235,9 +235,9 @@ async function deleteTimeSlot(id) {
         const response = await fetch('{% url "reservations:timeslot_delete" "00000000-0000-0000-0000-000000000000" %}'.replace('00000000-0000-0000-0000-000000000000', id), {
             method: 'POST',
             headers: {'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]')?.value || '{{ csrf_token }}'}
-        });
+        },
         if (response.ok) {
-            htmx.ajax('GET', '{% url "reservations:availability" %}', {target: '#main-content-area', pushUrl: false});
+            htmx.ajax('GET', '{% url "reservations:availability" %}', {target: '#main-content-area', pushUrl: false},
         }
     } catch (e) { console.error(e); }
 }
@@ -248,9 +248,9 @@ async function deleteBlockedDate(id) {
         const response = await fetch('{% url "reservations:blocked_date_delete" "00000000-0000-0000-0000-000000000000" %}'.replace('00000000-0000-0000-0000-000000000000', id), {
             method: 'POST',
             headers: {'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]')?.value || '{{ csrf_token }}'}
-        });
+        },
         if (response.ok) {
-            htmx.ajax('GET', '{% url "reservations:availability" %}', {target: '#main-content-area', pushUrl: false});
+            htmx.ajax('GET', '{% url "reservations:availability" %}', {target: '#main-content-area', pushUrl: false},
         }
     } catch (e) { console.error(e); }
 }

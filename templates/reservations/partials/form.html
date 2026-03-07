@@ -152,12 +152,12 @@ document.getElementById('reservation-form').addEventListener('submit', async fun
             method: 'POST',
             headers: {'X-CSRFToken': formData.get('csrfmiddlewaretoken')},
             body: formData
-        });
+        },
         const contentType = response.headers.get('content-type');
         if (contentType && contentType.includes('application/json')) {
             const data = await response.json();
             if (data.success && data.id) {
-                htmx.ajax('GET', '{% url "reservations:detail" "00000000-0000-0000-0000-000000000000" %}'.replace('00000000-0000-0000-0000-000000000000', data.id), {target: '#main-content-area', pushUrl: true});
+                htmx.ajax('GET', '{% url "reservations:detail" "00000000-0000-0000-0000-000000000000" %}'.replace('00000000-0000-0000-0000-000000000000', data.id), {target: '#main-content-area', pushUrl: true},
             }
         } else {
             // Server returned HTML (form with errors), swap it in
@@ -165,5 +165,5 @@ document.getElementById('reservation-form').addEventListener('submit', async fun
             document.getElementById('main-content-area').innerHTML = html;
         }
     } catch (e) { console.error(e); }
-});
+},
 </script>
