@@ -38,14 +38,6 @@ PERMISSIONS = [
 
 DEPENDENCIES = ['tables', 'customers']
 
-SETUP = {
-    'required': False,
-    'title': _('Configure Reservations'),
-    'description': _('Set up time slots for your reservation schedule'),
-    'icon': 'time-outline',
-    'check': 'is_setup_complete',
-}
-
 ROLE_PERMISSIONS = {
     "admin": ["*"],
     "manager": [
