@@ -49,6 +49,39 @@ def _employee(request):
     return None
 
 
+def is_setup_complete():
+    """Check if reservations module has been set up (at least 1 time slot)."""
+    return TimeSlot.objects.filter(is_deleted=False).exists()
+
+
+@login_required
+def setup(request):
+    """Initial setup: AI-powered time slot configuration."""
+    from django.shortcuts import render, redirect
+
+    if is_setup_complete():
+        return redirect('/m/reservations/')
+
+    from apps.configuration.models import StoreConfig
+    store = StoreConfig.get_config()
+    business = store.business_name or _('your business')
+
+    welcome = str(_(
+        "I'll help you set up your reservation schedule. Tell me about your "
+        "opening hours - when do you serve lunch? Dinner? Are there any days "
+        "you're closed?"
+    ))
+    auto_prompt = json.dumps(str(_(
+        "I need to set up reservation time slots for %(business)s. "
+        "Please load the reservations module tools and ask me about my schedule."
+    ) % {'business': business}))
+
+    return render(request, 'reservations/pages/setup.html', {
+        'welcome_message': welcome,
+        'auto_prompt': auto_prompt,
+    })
+
+
 # ==============================================================================
 # INDEX / TODAY
 # ==============================================================================

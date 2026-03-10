@@ -6,6 +6,9 @@ from . import views
 app_name = 'reservations'
 
 urlpatterns = [
+    # Setup (initial configuration)
+    path('setup/', views.setup, name='setup'),
+
     # Main views
     path('', views.index, name='index'),
     path('today/', views.today, name='today'),
