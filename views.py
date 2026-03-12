@@ -16,6 +16,7 @@ from django.utils import timezone
 
 from apps.accounts.decorators import login_required, permission_required
 from apps.core.htmx import htmx_view
+from apps.modules_runtime.navigation import with_module_nav
 
 from .models import (
     Reservation,
@@ -54,6 +55,7 @@ def _employee(request):
 # ==============================================================================
 
 @login_required
+@with_module_nav('reservations', 'today')
 @htmx_view('reservations/pages/index.html', 'reservations/partials/index.html')
 def index(request):
     """Redirect to today view."""
@@ -61,6 +63,7 @@ def index(request):
 
 
 @login_required
+@with_module_nav('reservations', 'today')
 @htmx_view('reservations/pages/today.html', 'reservations/partials/today.html')
 def today(request):
     """Today's reservations grouped by status."""
@@ -89,6 +92,7 @@ def today(request):
 # ==============================================================================
 
 @login_required
+@with_module_nav('reservations', 'calendar')
 @htmx_view('reservations/pages/calendar.html', 'reservations/partials/calendar.html')
 def calendar(request):
     """Calendar view for browsing reservations by date."""
@@ -128,6 +132,7 @@ def calendar(request):
 # ==============================================================================
 
 @login_required
+@with_module_nav('reservations', 'list')
 @htmx_view('reservations/pages/list.html', 'reservations/partials/list.html')
 def reservation_list(request):
     """All reservations with filters."""
@@ -317,6 +322,7 @@ def no_show_reservation(request, pk):
 # ==============================================================================
 
 @login_required
+@with_module_nav('reservations', 'waitlist')
 @htmx_view('reservations/pages/waitlist.html', 'reservations/partials/waitlist.html')
 def waitlist(request):
     """View waitlist entries."""
@@ -373,6 +379,7 @@ def waitlist_delete(request, pk):
 # ==============================================================================
 
 @login_required
+@with_module_nav('reservations', 'availability')
 @htmx_view('reservations/pages/availability.html', 'reservations/partials/availability.html')
 def availability(request):
     """Manage time slots and blocked dates."""
@@ -525,6 +532,7 @@ def api_check_availability(request):
 
 @login_required
 @permission_required('reservations.manage_settings')
+@with_module_nav('reservations', 'settings')
 @htmx_view('reservations/pages/settings.html', 'reservations/partials/settings.html')
 def settings(request):
     """Reservation settings page."""
