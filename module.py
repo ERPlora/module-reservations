@@ -2,7 +2,7 @@ from django.utils.translation import gettext_lazy as _
 
 MODULE_ID = 'reservations'
 MODULE_NAME = _('Reservations')
-MODULE_VERSION = '2.0.6'
+MODULE_VERSION = '2.0.7'
 
 MENU = {
     'label': _('Reservations'),
